@@ -29,7 +29,9 @@ class EventBus:
             callback: Função que será chamada ao receber o evento
         """
         self._subscribers[event_name].append(callback)
-        print(f"[EventBus] '{callback.__self__.name}' inscrito em '{event_name}'")
+        name = getattr(callback, '__self__', None)
+        name = getattr(name, 'name', callback.__name__ if hasattr(callback, '__name__') else 'anonymous')
+        print(f"[EventBus] '{name}' inscrito em '{event_name}'")
  
     def publish(self, event: Event) -> None:
         """
