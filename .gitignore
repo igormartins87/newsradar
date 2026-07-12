@@ -1,0 +1,22 @@
+# Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambiente virtual
+.venv/
+venv/
+
+# Pytest
+.pytest_cache/
+
+# Mypy
+.mypy_cache/
+
+# VSCode
+.vscode/
+
+# IDEs
+.idea/
+
+.env
