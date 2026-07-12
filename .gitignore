@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Bytecode
 __pycache__/
 *.py[cod]
@@ -20,3 +21,6 @@ venv/
 .idea/
 
 .env
+=======
+.cpython-313.pyc
+>>>>>>> feature/event-bus
