@@ -427,7 +427,6 @@
 
 <script>
   const API_URL = 'https://newsradar-api-s8id.onrender.com';
-  const API_KEY = 'newsradar-2024-@Xk9#mP2qL';
 
   let allArticles = [];
   let activeSource = 'all';
@@ -444,9 +443,7 @@
       </div>`;
 
     try {
-      const res = await fetch(`${API_URL}/news/?limit=15`, {
-        headers: { 'X-API-Key': API_KEY }
-      });
+      const res = await fetch(`${API_URL}/news/public?limit=15`);
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();

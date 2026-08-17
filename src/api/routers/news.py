@@ -49,3 +49,15 @@ async def get_news_by_source(
         "total": len(articles),
         "articles": articles,
     }
+
+@router.get(
+    "/public",
+    summary="Rota pública para o dashboard web",
+)
+async def get_public_news(
+    limit: int = Query(default=15, ge=1, le=30),
+):
+    return {
+        "status": "ok",
+        "articles": rss.fetch_all(limit=limit),
+    }
