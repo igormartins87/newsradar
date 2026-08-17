@@ -37,7 +37,7 @@ class FetcherService(BaseService):
         print(f"[{self.name}] Buscando notícias em: {url}")
 
         try:
-            response = httpx.get(url, headers=self.headers, timeout=10)
+            response = httpx.get(url, headers=self.headers, timeout=60)
             response.raise_for_status()
             data = response.json()
 

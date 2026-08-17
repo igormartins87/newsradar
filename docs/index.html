@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NewsRadar — Digest do dia</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root[data-theme="dark"] {
+    --bg: #0d0f14;
+    --surface: #161a24;
+    --surface2: #1e2433;
+    --border: #2a3045;
+    --text: #e8eaf0;
+    --text-secondary: #7a8299;
+    --accent: #4f7cff;
+    --accent-glow: rgba(79,124,255,0.15);
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --green-bg: rgba(52,211,153,0.1);
+    --yellow-bg: rgba(251,191,36,0.1);
+    --red-bg: rgba(248,113,113,0.1);
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --tag-bg: #2a3045;
+  }
+  :root[data-theme="light"] {
+    --bg: #f0f2f8;
+    --surface: #ffffff;
+    --surface2: #f5f7ff;
+    --border: #dde2f0;
+    --text: #1a1f36;
+    --text-secondary: #6b7494;
+    --accent: #3b6bff;
+    --accent-glow: rgba(59,107,255,0.1);
+    --green: #059669;
+    --yellow: #d97706;
+    --red: #dc2626;
+    --green-bg: rgba(5,150,105,0.08);
+    --yellow-bg: rgba(217,119,6,0.08);
+    --red-bg: rgba(220,38,38,0.08);
+    --shadow: 0 4px 24px rgba(0,0,0,0.08);
+    --tag-bg: #e8ebf8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.3px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .last-update {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .theme-toggle {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .theme-toggle:hover { border-color: var(--accent); }
+
+  .refresh-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    padding: 7px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.2s;
+  }
+  .refresh-btn:hover { opacity: 0.85; }
+  .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* MAIN */
+  main { max-width: 1280px; margin: 0 auto; padding: 2rem; }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+  }
+
+  .stat-value.green { color: var(--green); }
+  .stat-value.yellow { color: var(--yellow); }
+  .stat-value.accent { color: var(--accent); }
+
+  /* FILTERS */
+  .filters {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .search-box::placeholder { color: var(--text-secondary); }
+  .search-box:focus { border-color: var(--accent); }
+
+  .filter-group { display: flex; gap: 6px; }
+
+  .filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* GRID */
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* CARD */
+  .news-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+  }
+  .news-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+    border-color: var(--accent);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .source-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: var(--tag-bg);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .score-badge {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .score-badge.high { background: var(--green-bg); color: var(--green); }
+  .score-badge.medium { background: var(--yellow-bg); color: var(--yellow); }
+  .score-badge.low { background: var(--red-bg); color: var(--red); }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--text);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .topic-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    background: var(--accent-glow);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+  }
+
+  .card-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .read-link {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+  }
+  .read-link:hover { text-decoration: underline; }
+
+  /* EMPTY / LOADING */
+  .state-box {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+  }
+  .state-box .icon { font-size: 48px; margin-bottom: 1rem; }
+  .state-box p { font-size: 15px; }
+
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* SCORE BAR */
+  .score-bar {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--border);
+    overflow: hidden;
+    margin-top: 2px;
+  }
+  .score-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📡</div>
+    NewsRadar
+  </div>
+  <div class="header-right">
+    <span class="last-update" id="lastUpdate">—</span>
+    <button class="theme-toggle" onclick="toggleTheme()">
+      <span id="themeIcon">☀️</span>
+      <span id="themeLabel">Claro</span>
+    </button>
+    <button class="refresh-btn" onclick="loadNews()" id="refreshBtn">
+      🔄 Atualizar
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-label">Total de notícias</div>
+      <div class="stat-value accent" id="statTotal">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Alta relevância</div>
+      <div class="stat-value green" id="statHigh">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Média relevância</div>
+      <div class="stat-value yellow" id="statMedium">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Fontes ativas</div>
+      <div class="stat-value" id="statSources">—</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <input class="search-box" type="text" placeholder="🔍 Buscar notícia..." id="searchInput" oninput="filterCards()"/>
+    <div class="filter-group" id="sourceFilters">
+      <button class="filter-btn active" data-source="all" onclick="setFilter(this)">Todas</button>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="news-grid" id="newsGrid">
+    <div class="state-box">
+      <div class="spinner"></div>
+      <p>Carregando notícias...</p>
+    </div>
+  </div>
+</main>
+
+<script>
+  const API_URL = 'https://newsradar-api-s8id.onrender.com';
+
+  let allArticles = [];
+  let activeSource = 'all';
+
+  async function loadNews() {
+    const btn = document.getElementById('refreshBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Buscando...';
+
+    document.getElementById('newsGrid').innerHTML = `
+      <div class="state-box">
+        <div class="spinner"></div>
+        <p>Buscando notícias em tempo real...</p>
+      </div>`;
+
+    try {
+      const res = await fetch(`${API_URL}/news/public?limit=15`);
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      allArticles = (data.articles || []).sort((a, b) => (b.score || 0) - (a.score || 0));
+
+      updateStats();
+      buildSourceFilters();
+      renderCards();
+
+      const now = new Date();
+      document.getElementById('lastUpdate').textContent =
+        `Atualizado às ${now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
+
+    } catch (e) {
+      document.getElementById('newsGrid').innerHTML = `
+        <div class="state-box">
+          <div class="icon">⚠️</div>
+          <p>Erro ao carregar notícias. Verifique a API Key ou tente novamente.</p>
+        </div>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '🔄 Atualizar';
+    }
+  }
+
+  function updateStats() {
+    const high = allArticles.filter(a => (a.score||0) >= 8).length;
+    const medium = allArticles.filter(a => (a.score||0) >= 6 && (a.score||0) < 8).length;
+    const sources = [...new Set(allArticles.map(a => a.source_name))].length;
+
+    document.getElementById('statTotal').textContent = allArticles.length;
+    document.getElementById('statHigh').textContent = high;
+    document.getElementById('statMedium').textContent = medium;
+    document.getElementById('statSources').textContent = sources;
+  }
+
+  function buildSourceFilters() {
+    const sources = [...new Set(allArticles.map(a => a.source_name).filter(Boolean))];
+    const container = document.getElementById('sourceFilters');
+    container.innerHTML = `<button class="filter-btn active" data-source="all" onclick="setFilter(this)">Todas</button>`;
+    sources.forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.dataset.source = s;
+      btn.textContent = s;
+      btn.onclick = function() { setFilter(this); };
+      container.appendChild(btn);
+    });
+  }
+
+  function setFilter(btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeSource = btn.dataset.source;
+    filterCards();
+  }
+
+  function filterCards() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const filtered = allArticles.filter(a => {
+      const matchSource = activeSource === 'all' || a.source_name === activeSource;
+      const matchQuery = !query ||
+        (a.title||'').toLowerCase().includes(query) ||
+        (a.description||'').toLowerCase().includes(query);
+      return matchSource && matchQuery;
+    });
+    renderCards(filtered);
+  }
+
+  function getScoreClass(score) {
+    if (score >= 8) return 'high';
+    if (score >= 6) return 'medium';
+    return 'low';
+  }
+
+  function getScoreIcon(score) {
+    if (score >= 8) return '🔥';
+    if (score >= 6) return '⚡';
+    return '•';
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    try {
+      return new Date(dateStr).toLocaleDateString('pt-BR', {
+        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+      });
+    } catch { return dateStr; }
+  }
+
+  function renderCards(articles = allArticles) {
+    const grid = document.getElementById('newsGrid');
+
+    if (!articles.length) {
+      grid.innerHTML = `
+        <div class="state-box">
+          <div class="icon">🔍</div>
+          <p>Nenhuma notícia encontrada para este filtro.</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = articles.map(a => {
+      const score = a.score || 0;
+      const scoreClass = getScoreClass(score);
+      const scoreIcon = getScoreIcon(score);
+      const topics = (a.matched_topics || []).slice(0, 3);
+      const fillColor = score >= 8 ? 'var(--green)' : score >= 6 ? 'var(--yellow)' : 'var(--red)';
+
+      return `
+        <a class="news-card" href="${a.url || '#'}" target="_blank" rel="noopener">
+          <div class="card-top">
+            <span class="source-badge">${a.source_name || '—'}</span>
+            <span class="score-badge ${scoreClass}">${scoreIcon} ${score.toFixed(1)}</span>
+          </div>
+          <div class="score-bar">
+            <div class="score-fill" style="width:${(score/10)*100}%;background:${fillColor}"></div>
+          </div>
+          <div class="card-title">${a.title || 'Sem título'}</div>
+          ${a.description ? `<div class="card-desc">${a.description.replace(/<[^>]*>/g,'')}</div>` : ''}
+          ${topics.length ? `
+            <div class="card-topics">
+              ${topics.map(t => `<span class="topic-tag">${t}</span>`).join('')}
+            </div>` : ''}
+          <div class="card-footer">
+            <span class="card-date">${formatDate(a.published_at)}</span>
+            <span class="read-link">Ler notícia →</span>
+          </div>
+        </a>`;
+    }).join('');
+  }
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.dataset.theme === 'dark';
+    html.dataset.theme = isDark ? 'light' : 'dark';
+    document.getElementById('themeIcon').textContent = isDark ? '🌙' : '☀️';
+    document.getElementById('themeLabel').textContent = isDark ? 'Escuro' : 'Claro';
+    localStorage.setItem('theme', html.dataset.theme);
+  }
+
+  // Inicializar tema salvo
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  document.documentElement.dataset.theme = savedTheme;
+  if (savedTheme === 'light') {
+    document.getElementById('themeIcon').textContent = '🌙';
+    document.getElementById('themeLabel').textContent = 'Escuro';
+  }
+
+  loadNews();
+</script>
+</body>
+</html>
