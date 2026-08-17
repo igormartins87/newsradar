@@ -25,9 +25,9 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # CORS — OWASP: controlar origens permitidas
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("ALLOWED_ORIGINS", "*").split(","),
+    allow_origins=["*"],
     allow_methods=["GET"],
-    allow_headers=["X-API-Key"],
+    allow_headers=["*"],
 )
 
 # Routers
