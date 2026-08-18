@@ -1,23 +1,71 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from src.api.rss_parser import RSSParser
 from src.api.security import validate_api_key
+from src.event_bus.event_bus import EventBus
+from src.score.scorer_service import ScorerService
 
 router = APIRouter(prefix="/news", tags=["Notícias"])
 rss = RSSParser()
 
 
+def _score_articles(articles: list[dict]) -> list[dict]:
+    """
+    Pontua os artigos usando o ScorerService.
+
+    Cria um EventBus temporário, publica os artigos
+    e captura o resultado pontuado.
+    """
+    if not articles:
+        return []
+
+    bus = EventBus()
+    scored_articles = []
+
+    ScorerService(
+        bus=bus,
+        topics=[
+            "inteligência artificial",
+            "concurso",
+            "python",
+            "tecnologia",
+            "ibge",
+            "cesgranrio",
+            "engenharia",
+            "software",
+        ]
+    )
+
+    # Captura o resultado do scorer
+    def capture(event):
+        scored_articles.extend(event.payload.get("articles", []))
+
+    bus.subscribe("news.scored", capture)
+
+    from src.event_bus.event import Event
+    bus.publish(Event("news.parsed", {
+        "source": "api",
+        "total": len(articles),
+        "articles": articles,
+    }))
+
+    return scored_articles if scored_articles else articles
+
+
 @router.get(
     "/",
     summary="Buscar notícias de todas as fontes",
+    description="Retorna notícias agregadas de G1, BBC e Tecmundo via RSS.",
 )
 async def get_all_news(
     limit: int = Query(default=10, ge=1, le=50),
     _: str = Depends(validate_api_key),
 ):
+    articles = rss.fetch_all(limit=limit)
+    scored = _score_articles(articles)
     return {
         "status": "ok",
-        "total": 0,
-        "articles": rss.fetch_all(limit=limit),
+        "total": len(scored),
+        "articles": scored,
     }
 
 
@@ -28,9 +76,11 @@ async def get_all_news(
 async def get_public_news(
     limit: int = Query(default=15, ge=1, le=30),
 ):
+    articles = rss.fetch_all(limit=limit)
+    scored = _score_articles(articles)
     return {
         "status": "ok",
-        "articles": rss.fetch_all(limit=limit),
+        "articles": scored,
     }
 
 
@@ -51,9 +101,10 @@ async def get_news_by_source(
                    f"Disponíveis: {sources_disponiveis}",
         )
     articles = rss.fetch(source=source, limit=limit)
+    scored = _score_articles(articles)
     return {
         "status": "ok",
         "source": source,
-        "total": len(articles),
-        "articles": articles,
+        "total": len(scored),
+        "articles": scored,
     }
