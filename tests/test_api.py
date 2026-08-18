@@ -1,9 +1,14 @@
-import pytest
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 from src.api.main import app
+from src.api.security import validate_api_key
 
 client = TestClient(app)
-API_KEY = "newsradar-chave-secreta-2024"
+
+
+def auth_ok():
+    """Mock que simula autenticação válida."""
+    return "valid-key"
 
 
 class TestAPI:
@@ -18,12 +23,18 @@ class TestAPI:
         assert response.status_code == 403
 
     def test_get_news_com_api_key_invalida_retorna_403(self):
-        response = client.get("/news/", headers={"X-API-Key": "chave-errada"})
+        response = client.get(
+            "/news/",
+            headers={"X-API-Key": "chave-errada"}
+        )
         assert response.status_code == 403
 
-    def test_get_news_fonte_invalida_retorna_404(self):
+    @patch("src.api.routers.news.rss")
+    def test_get_news_fonte_invalida_retorna_404(self, mock_rss):
+        app.dependency_overrides[validate_api_key] = auth_ok
         response = client.get(
             "/news/fonte-inexistente",
-            headers={"X-API-Key": API_KEY}
+            headers={"X-API-Key": "any-key"}
         )
+        app.dependency_overrides.clear()
         assert response.status_code == 404
