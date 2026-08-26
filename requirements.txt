@@ -8,3 +8,4 @@ bleach>=6.4.0
 pydantic>=2.0.0
 webencodings>=0.5.1
 sgmllib3k>=1.0.0
+apscheduler>=3.10.0

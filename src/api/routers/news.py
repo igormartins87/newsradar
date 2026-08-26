@@ -63,6 +63,19 @@ async def get_public_news(
     articles = _fetch_and_score(limit=limit)
     return {"status": "ok", "articles": articles}
 
+@router.get("/scheduler/status", summary="Status do scheduler")
+async def get_scheduler_status(_: str = Depends(validate_api_key)):
+    from src.api.main import scheduler
+    jobs = [
+        {
+            "id": job.id,
+            "name": job.name,
+            "next_run": str(job.next_run_time),
+        }
+        for job in scheduler.scheduler.get_jobs()
+    ]
+    return {"status": "ok", "jobs": jobs}
+
 
 @router.get("/sources", summary="Lista todas as fontes e categorias")
 async def get_sources():
