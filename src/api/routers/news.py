@@ -5,10 +5,12 @@ from src.api.security import validate_api_key
 from src.event_bus.event import Event
 from src.event_bus.event_bus import EventBus
 from src.score.scorer_service import ScorerService
+from src.api.summarizer import AISummarizer
 
 router = APIRouter(prefix="/news", tags=["Notícias"])
 rss = RSSParser()
 cache = InMemoryCache(ttl=1800)
+summarizer = AISummarizer()
 
 
 def _score_articles(articles: list[dict]) -> list[dict]:
@@ -41,10 +43,15 @@ def _fetch_and_score(source: str | None = None, limit: int = 15) -> list[dict]:
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
+
     articles = rss.fetch(source=source, limit=limit) if source else rss.fetch_all(limit=limit)
     scored = _score_articles(articles)
-    cache.set(cache_key, scored)
-    return scored
+    summarized = summarizer.summarize_batch(scored)  # ← sumariza ANTES de salvar no cache
+    cache.set(cache_key, summarized)                 # ← salva COM resumos no cache
+
+    return summarized
+
+
 
 
 @router.get("/", summary="Buscar notícias de todas as fontes")
