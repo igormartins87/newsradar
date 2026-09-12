@@ -21,10 +21,14 @@ def _score_articles(articles: list[dict]) -> list[dict]:
     ScorerService(
         bus=bus,
         topics=[
-            "inteligência artificial", "concurso", "python",
-            "tecnologia", "ibge", "cesgranrio", "engenharia", "software",
-            "artificial intelligence", "space", "science", "nasa",
-            "machine learning", "robotics", "quantum",
+            # Português
+            "inteligência artificial", "tecnologia", "segurança",
+            "python", "software", "engenharia", "ciência", "espaço",
+            # Inglês
+            "artificial intelligence", "machine learning", "deep learning",
+            "neural network", "llm", "gpt", "robotics", "quantum",
+            "space", "nasa", "cybersecurity", "research", "paper",
+            "open source", "github", "model", "dataset",
         ]
     )
     def capture(event):
@@ -38,7 +42,11 @@ def _score_articles(articles: list[dict]) -> list[dict]:
     return scored_articles if scored_articles else articles
 
 
-def _fetch_and_score(source: str | None = None, limit: int = 15) -> list[dict]:
+def _fetch_and_score(
+    source: str | None = None,
+    limit: int = 15,
+    top_n: int | None = None,
+) -> list[dict]:
     cache_key = f"news:{source or 'all'}:{limit}"
     cached = cache.get(cache_key)
     if cached is not None:
@@ -46,9 +54,21 @@ def _fetch_and_score(source: str | None = None, limit: int = 15) -> list[dict]:
 
     articles = rss.fetch(source=source, limit=limit) if source else rss.fetch_all(limit=limit)
     scored = _score_articles(articles)
-    summarized = summarizer.summarize_batch(scored)  # ← sumariza ANTES de salvar no cache
-    cache.set(cache_key, summarized)                 # ← salva COM resumos no cache
 
+    # Top N — retorna só os mais relevantes por fonte
+    if top_n:
+        from collections import defaultdict
+        by_source: dict[str, list] = defaultdict(list)
+        for a in scored:
+            by_source[a.get("source_name", "")].append(a)
+        filtered = []
+        for source_articles in by_source.values():
+            source_articles.sort(key=lambda x: x.get("score", 0), reverse=True)
+            filtered.extend(source_articles[:top_n])
+        scored = sorted(filtered, key=lambda x: x.get("score", 0), reverse=True)
+
+    summarized = summarizer.summarize_batch(scored)
+    cache.set(cache_key, summarized)
     return summarized
 
 
@@ -65,10 +85,11 @@ async def get_all_news(
 
 @router.get("/public", summary="Rota pública para o dashboard web")
 async def get_public_news(
-    limit: int = Query(default=15, ge=1, le=30),
+    limit: int = Query(default=10, ge=1, le=20),
 ):
-    articles = _fetch_and_score(limit=limit)
+    articles = _fetch_and_score(limit=limit, top_n=5)
     return {"status": "ok", "articles": articles}
+
 
 @router.get("/scheduler/status", summary="Status do scheduler")
 async def get_scheduler_status(_: str = Depends(validate_api_key)):
