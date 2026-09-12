@@ -196,14 +196,15 @@
   </div>
 
   <!-- Category Tabs -->
-  <div class="tabs" id="categoryTabs">
+<div class="tabs" id="categoryTabs">
     <button class="tab active" data-cat="all" onclick="setCategory(this)">📰 Todas</button>
+    <button class="tab" data-cat="brasil" onclick="setCategory(this)">🇧🇷 Brasil</button>
     <button class="tab" data-cat="tecnologia" onclick="setCategory(this)">💻 Tecnologia</button>
     <button class="tab" data-cat="inteligencia_artificial" onclick="setCategory(this)">🤖 IA</button>
-    <button class="tab" data-cat="ciencia" onclick="setCategory(this)">🔬 Ciência</button>
-    <button class="tab" data-cat="espaco" onclick="setCategory(this)">🚀 Espaço</button>
+    <button class="tab" data-cat="pesquisa" onclick="setCategory(this)">🔬 Pesquisa</button>
+    <button class="tab" data-cat="seguranca" onclick="setCategory(this)">🔐 Segurança</button>
     <button class="tab" data-cat="tendencias" onclick="setCategory(this)">📈 Tendências</button>
-  </div>
+</div>
 
   <!-- Source Filters -->
   <div class="filter-row">
@@ -256,14 +257,15 @@
 <script>
   const API_URL = 'https://newsradar-api-s8id.onrender.com';
 
-  const CATEGORY_SOURCES = {
+const CATEGORY_SOURCES = {
     all: null,
-    tecnologia: ['G1','BBC','TECMUNDO','CANALTECH','TECHCRUNCH','WIRED'],
-    inteligencia_artificial: ['MIT','TECHCRUNCH'],
-    ciencia: ['SCIENCEDAILY','G1'],
-    espaco: ['NASA','SPACENEWS'],
-    tendencias: ['WIRED','BBC','TECMUNDO'],
-  };
+    brasil: ['G1','CANALTECH','TECMUNDO'],
+    tecnologia: ['ARSTECHNICA','TECHCRUNCH','THEVERGE','WIRED','MIT'],
+    inteligencia_artificial: ['PAPERSWITHCODE','IMPORTAI','THEBATCH','ARXIV_AI','ARXIV_LG','TECHCRUNCH'],
+    pesquisa: ['ARXIV_AI','ARXIV_LG','PAPERSWITHCODE'],
+    seguranca: ['KREBS','ARSTECHNICA','THEVERGE'],
+    tendencias: ['WIRED','MIT','THEVERGE','ARSTECHNICA'],
+};
 
   let allArticles = [];
   let activeCategory = 'all';
