@@ -2,19 +2,20 @@
 
 <div align="center">
 
-![NewsRadar Banner](https://img.shields.io/badge/NewsRadar-API%20de%20Not%C3%ADcias-blue?style=for-the-badge&logo=rss&logoColor=white)
+![NewsRadar Banner](https://img.shields.io/badge/NewsRadar-AI%20News%20Aggregator-blue?style=for-the-badge&logo=rss&logoColor=white)
 
 [![Status](https://img.shields.io/badge/status-online-brightgreen?style=flat-square)](https://newsradar-api-s8id.onrender.com)
 [![Python](https://img.shields.io/badge/python-3.13-blue?style=flat-square&logo=python)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-teal?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
-[![Arquitetura](https://img.shields.io/badge/arquitetura-SOA-purple?style=flat-square)](docs/architecture.md)
-[![OWASP](https://img.shields.io/badge/segurança-OWASP-red?style=flat-square)](docs/security.md)
+[![FastAPI](https://img.shields.io/badge/FastAPI-2.0-teal?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
+[![Tests](https://img.shields.io/badge/tests-81%20passing-brightgreen?style=flat-square)](tests/)
+[![Architecture](https://img.shields.io/badge/architecture-SOA-purple?style=flat-square)](docs/architecture.md)
+[![Security](https://img.shields.io/badge/security-OWASP-red?style=flat-square)](docs/security.md)
 [![Deploy](https://img.shields.io/badge/deploy-Render-46E3B7?style=flat-square&logo=render)](https://newsradar-api-s8id.onrender.com)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 
-**API REST de agregação de notícias em tempo real, construída com Arquitetura SOA e orientada a eventos.**
+**Agregador inteligente de notícias de tecnologia, IA, ciência e segurança — com sumarização por IA e arquitetura SOA orientada a eventos.**
 
-[🚀 API ao Vivo](https://newsradar-api-s8id.onrender.com) • [📖 Documentação](https://newsradar-api-s8id.onrender.com/docs) • [📋 Contratos de Evento](docs/event-contracts.md)
+[🚀 API ao Vivo](https://newsradar-api-s8id.onrender.com) • [📖 Swagger](https://newsradar-api-s8id.onrender.com/docs) • [🌐 Dashboard](https://igormartins87.github.io/newsradar) • [📋 Event Contracts](docs/event-contracts.md)
 
 </div>
 
@@ -22,27 +23,27 @@
 
 ## 🎯 Sobre o projeto
 
-O **NewsRadar** nasceu de uma jornada de aprendizado prático em Engenharia de Software. A ideia foi simples: **antes de escrever uma linha de código, modelar tudo como um engenheiro de verdade faria.**
-
-O projeto agrega notícias em tempo real de fontes públicas (G1, BBC, Tecmundo) via RSS, processa e serve por meio de uma API REST segura — tudo construído sobre uma **Arquitetura Orientada a Serviços (SOA)** com comunicação por eventos.
+O **NewsRadar** é um sistema de agregação de notícias construído do zero com **Arquitetura Orientada a Serviços (SOA)** e comunicação por eventos. Ele agrega notícias de 15 fontes especializadas em tecnologia, inteligência artificial, ciência e segurança — filtra por relevância, traduz e resume artigos em inglês com IA, e serve tudo via API REST segura com dashboard web.
 
 ### O que torna esse projeto diferente
 
-- 🏗️ **Modelagem primeiro** — diagramas UML, contratos de evento e documentação antes do código
-- 🔒 **Segurança desde o início** — padrões OWASP aplicados desde a primeira linha
-- 🎯 **SOA na prática** — baixo acoplamento, responsabilidade única, pub/sub
-- 📚 **Documentação como cidadã de primeira classe** — cada decisão está documentada
+- 🏗️ **Modelagem primeiro** — diagramas UML e contratos de evento antes de qualquer linha de código
+- 🤖 **IA integrada** — sumarização e tradução automática de artigos em inglês via Groq/Llama
+- 🔒 **Segurança por design** — OWASP, XSS, SSRF, headers HTTP, rate limiting desde o início
+- 📡 **SOA real** — 5 serviços independentes comunicando via Event Bus Pub/Sub
+- 🧪 **81 testes** — cobertura completa de todos os serviços e componentes
+- ⚡ **Cache inteligente** — TTL de 30 minutos com scheduler automático a cada 25 minutos
 
 ---
 
 ## 🏗️ Arquitetura SOA
 
-O sistema é composto por **5 serviços independentes** que se comunicam exclusivamente por meio de um **Event Bus** central — nenhum serviço conhece o outro diretamente.
+O sistema é composto por **5 serviços independentes** que se comunicam exclusivamente via **Event Bus** central — nenhum serviço conhece o outro diretamente.
 
 ```mermaid
 graph TD
-    EXT([🌐 RSS Público\nG1 · BBC · Tecmundo])
-    API([🔌 NewsRadar API\nRender · FastAPI])
+    EXT([🌐 15 Fontes RSS\nTechCrunch · MIT · NASA · ArXiv · Krebs...])
+    API([🔌 NewsRadar API\nFastAPI · Render])
 
     subgraph SOA["📡 NewsRadar — Arquitetura SOA"]
         FE[🛵 Fetcher Service]
@@ -50,8 +51,10 @@ graph TD
         SC[⭐ Scorer Service]
         NO[🔔 Notifier Service]
         DA[📋 Dashboard Service]
-        EB((📡 Event Bus))
+        EB((📡 Event Bus\nPub/Sub))
     end
+
+    AI([🤖 Groq AI\nLlama · Sumarização PT])
 
     EXT -->|RSS Feed| API
     API -->|JSON| FE
@@ -62,6 +65,8 @@ graph TD
     SC -->|news.scored| EB
     EB -->|news.scored| NO
     EB -->|news.scored| DA
+    API -->|artigos EN| AI
+    AI -->|resumo PT| API
 ```
 
 ### Serviços
@@ -70,35 +75,68 @@ graph TD
 |---|---|---|---|
 | **Fetcher** | Busca notícias na API | `news.fetched` | — |
 | **Parser** | Normaliza e remove duplicatas | `news.parsed` | `news.fetched` |
-| **Scorer** | Calcula relevância por palavras-chave | `news.scored` | `news.parsed` |
-| **Notifier** | Gera alertas para notícias relevantes | `news.alert` | `news.scored` |
+| **Scorer** | Calcula relevância por tópicos | `news.scored` | `news.parsed` |
+| **Notifier** | Gera alertas para score alto | `news.alert` | `news.scored` |
 | **Dashboard** | Exibe digest no terminal | — | `news.scored` |
 
 ---
 
-## 🔌 API ao Vivo
+## 🌐 Dashboard Web
 
-A API está hospedada no Render e disponível 24h:
+Dashboard online com dark/light mode, filtros por categoria e idioma, e resumos em português gerados por IA para notícias em inglês.
+
+**Acesse:** [igormartins87.github.io/newsradar](https://igormartins87.github.io/newsradar)
+
+### Funcionalidades
+
+- 📰 **15 fontes** — Brasil, Tecnologia, IA, Pesquisa, Segurança
+- 🤖 **Resumo por IA** — artigos EN resumidos e traduzidos automaticamente
+- 🏷️ **Filtro por categoria** — Brasil, Tecnologia, IA, Pesquisa, Segurança, Tendências
+- 🌍 **Filtro por idioma** — PT 🇧🇷 e EN 🇺🇸 separados
+- ⚙️ **Tópicos configuráveis** — personalize seus interesses com localStorage
+- 🌙 **Dark/Light mode** — preferência salva entre sessões
+- 📊 **Score visual** — barra de relevância colorida em cada card
+
+---
+
+## 📰 Fontes de Notícias
+
+| Categoria | Fontes |
+|---|---|
+| 🇧🇷 **Brasil** | G1 Tecnologia, Canaltech, TecMundo |
+| 💻 **Tecnologia** | Ars Technica, TechCrunch, The Verge, Wired, MIT Tech Review |
+| 🤖 **IA** | Papers With Code, Import AI, The Batch (DeepLearning.ai) |
+| 🔬 **Pesquisa** | arXiv CS.AI, arXiv CS.LG |
+| 🔐 **Segurança** | Krebs on Security |
+
+---
+
+## 🔌 API REST
+
+API hospedada no Render, disponível 24h com scheduler automático para manter o cache sempre atualizado.
 
 ```
-https://newsradar-api-s8id.onrender.com
+Base URL: https://newsradar-api-s8id.onrender.com
 ```
 
 ### Endpoints
 
-| Método | Rota | Descrição |
-|---|---|---|
-| `GET` | `/` | Health check |
-| `GET` | `/news/` | Todas as fontes |
-| `GET` | `/news/g1` | Notícias do G1 |
-| `GET` | `/news/bbc` | Notícias da BBC |
-| `GET` | `/news/tecmundo` | Notícias do Tecmundo |
+| Método | Rota | Auth | Descrição |
+|---|---|---|---|
+| `GET` | `/` | — | Health check |
+| `GET` | `/news/public` | — | Notícias para o dashboard |
+| `GET` | `/news/` | API Key | Todas as fontes |
+| `GET` | `/news/{source}` | API Key | Fonte específica |
+| `GET` | `/news/category/{cat}` | — | Por categoria |
+| `GET` | `/news/sources` | — | Lista fontes e categorias |
+| `GET` | `/news/cache/info` | API Key | Estado do cache |
+| `GET` | `/news/cache/clear` | API Key | Limpa o cache |
+| `GET` | `/news/scheduler/status` | API Key | Status do scheduler |
 
-### Exemplo de uso
+### Exemplo
 
 ```bash
-curl -X GET "https://newsradar-api-s8id.onrender.com/news/?limit=5" \
-     -H "X-API-Key: sua-chave-aqui"
+curl https://newsradar-api-s8id.onrender.com/news/public?limit=5
 ```
 
 ```json
@@ -106,21 +144,16 @@ curl -X GET "https://newsradar-api-s8id.onrender.com/news/?limit=5" \
   "status": "ok",
   "articles": [
     {
-      "id": 123456,
-      "title": "OpenAI lança novo modelo com raciocínio avançado",
-      "description": "A empresa anunciou...",
-      "url": "https://g1.globo.com/...",
-      "published_at": "2024-01-15T08:30:00",
-      "source_name": "G1"
+      "title": "Physicists just found a tiny glitch in time itself",
+      "source_name": "SCIENCEDAILY",
+      "language": "en",
+      "score": 6.0,
+      "matched_topics": ["space", "quantum"],
+      "ai_summary": "Pesquisadores descobriram que teorias quânticas não convencionais sugerem uma incerteza fundamental no tempo.",
+      "has_ai_summary": true
     }
   ]
 }
-```
-
-### Documentação interativa
-
-```
-https://newsradar-api-s8id.onrender.com/docs
 ```
 
 ---
@@ -130,11 +163,48 @@ https://newsradar-api-s8id.onrender.com/docs
 | Controle | Implementação |
 |---|---|
 | **Autenticação** | API Key via header `X-API-Key` |
-| **Rate Limiting** | 10 requisições/minuto por IP |
-| **HTTPS** | SSL gratuito via Render |
-| **Validação** | FastAPI + Pydantic em todos os inputs |
+| **Rate Limiting** | 10 req/min por IP com SlowAPI |
+| **HTTPS** | SSL automático via Render |
+| **XSS** | Sanitização com Bleach em todos os campos RSS |
+| **SSRF** | Allowlist de domínios autorizados no RSSParser |
+| **Headers HTTP** | CSP, X-Frame-Options, X-XSS-Protection, HSTS |
 | **Variáveis sensíveis** | `.env` — nunca no código |
-| **CORS** | Origens controladas por variável de ambiente |
+| **CORS** | Origens e métodos controlados |
+
+---
+
+## ⚡ Performance
+
+| Componente | Estratégia |
+|---|---|
+| **Cache** | InMemoryCache com TTL de 30 minutos |
+| **Scheduler** | Atualização automática a cada 25 minutos |
+| **Keep-alive** | Ping a cada 10 minutos — Render nunca dorme |
+| **Filtro recência** | Só notícias das últimas 24 horas |
+| **Top N** | Máximo 5 artigos por fonte, ordenados por score |
+
+---
+
+## 🧪 Testes
+
+**81 testes passando, 0 falhas.**
+
+```bash
+py -m pytest tests/ -v
+```
+
+| Módulo | Testes |
+|---|---|
+| API endpoints | 4 |
+| Cache TTL | 6 |
+| Dashboard Service | 5 |
+| Event Bus | 13 |
+| Fetcher Service | 4 |
+| Notifier Service | 6 |
+| Parser Service | 5 |
+| RSS Parser | 21 |
+| Scorer Service | 5 |
+| AI Summarizer | 12 |
 
 ---
 
@@ -142,47 +212,76 @@ https://newsradar-api-s8id.onrender.com/docs
 
 ```
 newsradar/
-├── README.md
-├── CHANGELOG.md
-├── requirements.txt
-├── .env.example
 ├── docs/
-│   ├── architecture.md
-│   ├── event-contracts.md
+│   ├── architecture.md        ← diagramas SOA
+│   ├── event-contracts.md     ← payloads dos eventos
 │   └── use-cases.md
 ├── src/
 │   ├── api/
-│   │   ├── main.py
-│   │   ├── security.py
-│   │   ├── rss_parser.py
+│   │   ├── main.py            ← FastAPI + middleware de segurança
+│   │   ├── cache.py           ← InMemoryCache com TTL
+│   │   ├── scheduler.py       ← APScheduler keep-alive + refresh
+│   │   ├── summarizer.py      ← AISummarizer via Groq
+│   │   ├── rss_parser.py      ← RSS + SSRF + XSS + recência
+│   │   ├── security.py        ← API Key validation
 │   │   └── routers/
-│   │       └── news.py
+│   │       └── news.py        ← endpoints REST
 │   └── event_bus/
 │       ├── event.py
 │       ├── event_bus.py
 │       └── base_service.py
-└── tests/
-    ├── test_event_bus.py
-    └── test_api.py
+├── tests/                     ← 81 testes
+├── docs/index.html            ← dashboard web
+├── main.py                    ← orquestrador SOA
+└── requirements.txt
 ```
 
 ---
 
 ## 🚀 Roadmap
 
-- [x] Modelagem da arquitetura SOA
-- [x] Diagramas UML (componentes, sequência, casos de uso)
-- [x] Contratos de evento documentados
-- [x] Event Bus com POO (Event, EventBus, BaseService)
-- [x] Testes unitários do Event Bus
-- [x] API REST com FastAPI e RSS
-- [x] Segurança OWASP implementada
-- [x] Deploy no Render — API online
-- [ ] FetcherService integrado com a API
-- [ ] ParserService
-- [ ] ScorerService
-- [ ] NotifierService
-- [ ] Dashboard web visual
+- [x] Arquitetura SOA com Event Bus
+- [x] API REST com FastAPI e 15 fontes RSS
+- [x] Segurança OWASP completa
+- [x] Sumarização IA com Groq
+- [x] Cache inteligente com TTL
+- [x] Scheduler automático
+- [x] Dashboard web com dark/light mode
+- [x] 81 testes passando
+- [x] Deploy no Render + GitHub Pages
+- [ ] Persistência com Supabase
+- [ ] Histórico e analytics de tendências
+- [ ] Autenticação de usuários com JWT
+
+---
+
+## ▶️ Como executar localmente
+
+```bash
+# Clone
+git clone https://github.com/igormartins87/newsradar.git
+cd newsradar
+
+# Ambiente virtual
+python -m venv venv
+venv\Scripts\activate  # Windows
+
+# Dependências
+pip install -r requirements.txt
+
+# Variáveis de ambiente
+cp .env.example .env
+# edite o .env com suas chaves
+
+# API
+uvicorn src.api.main:app --reload
+
+# Pipeline SOA no terminal
+python main.py
+
+# Testes
+py -m pytest tests/ -v
+```
 
 ---
 
@@ -191,67 +290,16 @@ newsradar/
 | Tecnologia | Uso |
 |---|---|
 | Python 3.13 | Linguagem principal |
-| FastAPI | Framework da API REST |
-| Uvicorn | Servidor ASGI |
-| Feedparser | Consumo de feeds RSS |
+| FastAPI | Framework REST |
+| APScheduler | Scheduler automático |
+| Groq + Llama | Sumarização por IA |
+| Feedparser | Consumo de RSS |
+| Bleach | Sanitização XSS |
 | SlowAPI | Rate limiting |
-| Render | Hospedagem gratuita |
+| Rich | Interface terminal |
 | Pytest | Testes unitários |
-| Mermaid | Diagramas no Markdown |
-
----
-
-## ▶️ Como executar localmente
-
-```bash
-# Clone o repositório
-git clone https://github.com/igormartins87/newsradar.git
-cd newsradar
-
-# Crie o ambiente virtual
-python -m venv venv
-venv\Scripts\activate  # Windows
-
-# Instale as dependências
-pip install -r requirements.txt
-
-# Configure as variáveis de ambiente
-cp .env.example .env
-
-# Execute a API
-uvicorn src.api.main:app --reload
-
-# Execute os testes
-py -m pytest tests/ -v
-```
-
----
-
-## 📚 Documentação
-
-| Documento | Descrição |
-|---|---|
-| [`docs/architecture.md`](docs/architecture.md) | Arquitetura SOA detalhada |
-| [`docs/event-contracts.md`](docs/event-contracts.md) | Contratos de evento |
-| [`docs/use-cases.md`](docs/use-cases.md) | Casos de uso |
-| [`CHANGELOG.md`](CHANGELOG.md) | Histórico de versões |
-
----
-
-## 🎓 Jornada de aprendizado
-
-Este projeto faz parte da minha jornada de estudos em **Engenharia de Software e Arquitetura de Sistemas**, com foco na banca **Cesgranrio**.
-
-Cada etapa foi documentada e publicada no LinkedIn mostrando a evolução — da modelagem UML até o deploy em produção.
-
-**Conceitos aplicados na prática:**
-
-- Arquitetura SOA — separação de responsabilidades, baixo acoplamento
-- Orientação a eventos — publish/subscribe, contratos de evento
-- POO — encapsulamento, abstração, herança, polimorfismo
-- Engenharia de Software — modelagem UML, Git Flow, testes unitários
-- Segurança — OWASP Top 10, autenticação, rate limiting
-- DevOps — deploy automatizado no Render
+| Render | Deploy da API |
+| GitHub Pages | Dashboard web |
 
 ---
 
@@ -261,7 +309,7 @@ Cada etapa foi documentada e publicada no LinkedIn mostrando a evolução — da
 
 **Igor Martins de Almeida**
 
-Estudante de Engenharia de Software • Preparação Cesgranrio
+Engenheiro de Software
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Igor%20Martins-blue?style=flat-square&logo=linkedin)](https://linkedin.com/in/igormartins87)
 [![GitHub](https://img.shields.io/badge/GitHub-igormartins87-black?style=flat-square&logo=github)](https://github.com/igormartins87)
@@ -277,5 +325,5 @@ Este projeto está sob a licença MIT.
 ---
 
 <div align="center">
-Feito com 💙 por Igor Martins — aprendendo Engenharia de Software na prática
+Feito com 💙 por Igor Martins
 </div>
