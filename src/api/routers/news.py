@@ -104,6 +104,27 @@ async def get_scheduler_status(_: str = Depends(validate_api_key)):
     ]
     return {"status": "ok", "jobs": jobs}
 
+@router.get("/sources/health", summary="Health check de todas as fontes RSS")
+async def get_sources_health():
+    """
+    Retorna o status de cada fonte RSS.
+    Mostra quais estão OK, quais estão falhando e quais estão bloqueadas.
+    """
+    health = rss.get_health()
+    total = len(health)
+    closed = sum(1 for s in health.values() if s["state"] == "closed")
+    open_circuits = sum(1 for s in health.values() if s["state"] == "open")
+
+    return {
+        "status": "ok",
+        "summary": {
+            "total": total,
+            "healthy": closed,
+            "degraded": open_circuits,
+        },
+        "sources": health,
+    }
+
 
 @router.get("/sources", summary="Lista todas as fontes e categorias")
 async def get_sources():
