@@ -1,0 +1,126 @@
+name: CI — NewsRadar
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [develop]
+
+jobs:
+  tests:
+    name: 🧪 Testes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Rodar testes
+        env:
+          API_KEY: "test-key-ci"
+          GROQ_API_KEY: "test-groq-key-ci"
+        run: |
+          python -m pytest tests/ -v \
+            --tb=short \
+            -q
+
+      - name: Gerar relatório de cobertura
+        env:
+          API_KEY: "test-key-ci"
+          GROQ_API_KEY: "test-groq-key-ci"
+        run: |
+          pip install pytest-cov
+          python -m pytest tests/ \
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-report=html:coverage_report \
+            -q
+
+      - name: Upload relatório de cobertura
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage_report/
+          retention-days: 7
+
+  security:
+    name: 🔐 Segurança
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Instalar Bandit
+        run: pip install bandit
+
+      - name: Bandit — análise de segurança
+        run: |
+          bandit -r src/ \
+            --severity-level medium \
+            --confidence-level medium \
+            -f json \
+            -o bandit_report.json \
+            || true
+
+      - name: Upload relatório Bandit
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-report
+          path: bandit_report.json
+          retention-days: 7
+
+  quality:
+    name: 📊 Qualidade
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Instalar Ruff
+        run: pip install ruff
+
+      - name: Ruff — verificar código
+        run: |
+          ruff check src/ tests/ --output-format=github || true
+
+  summary:
+    name: ✅ Resumo
+    runs-on: ubuntu-latest
+    needs: [tests, security, quality]
+    if: always()
+
+    steps:
+      - name: Gerar resumo
+        run: |
+          echo "## 📋 NewsRadar CI — Resumo" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧪 Testes | ${{ needs.tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔐 Segurança | ${{ needs.security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📊 Qualidade | ${{ needs.quality.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Relatórios disponíveis nos **Artifacts** acima." >> $GITHUB_STEP_SUMMARY
