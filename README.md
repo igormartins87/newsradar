@@ -23,7 +23,7 @@
 
 ## 🎯 Sobre o projeto
 
-O **NewsRadar** é um sistema de agregação de notícias construído do zero com **Arquitetura Orientada a Serviços (SOA)** e comunicação por eventos. Ele agrega notícias de 15 fontes especializadas em tecnologia, inteligência artificial, ciência e segurança — filtra por relevância, traduz e resume artigos em inglês com IA, e serve tudo via API REST segura com dashboard web.
+O **NewsRadar** é um sistema de agregação de notícias construído do zero com **Arquitetura Orientada a Serviços (SOA)** e comunicação por eventos. Ele agrega notícias de 12 fontes especializadas em tecnologia, inteligência artificial, ciência e segurança — filtra por relevância, traduz e resume artigos em inglês com IA, e serve tudo via API REST segura com dashboard web.
 
 ### O que torna esse projeto diferente
 
@@ -31,7 +31,7 @@ O **NewsRadar** é um sistema de agregação de notícias construído do zero co
 - 🤖 **IA integrada** — sumarização e tradução automática de artigos em inglês via Groq/Llama
 - 🔒 **Segurança por design** — OWASP, XSS, SSRF, headers HTTP, rate limiting desde o início
 - 📡 **SOA real** — 5 serviços independentes comunicando via Event Bus Pub/Sub
-- 🧪 **81 testes** — cobertura completa de todos os serviços e componentes
+- 🧪 **112 testes** — cobertura completa de todos os serviços e componentes
 - ⚡ **Cache inteligente** — TTL de 30 minutos com scheduler automático a cada 25 minutos
 
 ---
@@ -187,7 +187,7 @@ curl https://newsradar-api-s8id.onrender.com/news/public?limit=5
 
 ## 🧪 Testes
 
-**81 testes passando, 0 falhas.**
+**112 testes passando, 0 falhas.**
 
 ```bash
 py -m pytest tests/ -v
@@ -230,7 +230,7 @@ newsradar/
 │       ├── event.py
 │       ├── event_bus.py
 │       └── base_service.py
-├── tests/                     ← 81 testes
+├── tests/                     ← 112 testes
 ├── docs/index.html            ← dashboard web
 ├── main.py                    ← orquestrador SOA
 └── requirements.txt
@@ -247,7 +247,7 @@ newsradar/
 - [x] Cache inteligente com TTL
 - [x] Scheduler automático
 - [x] Dashboard web com dark/light mode
-- [x] 81 testes passando
+- [x] 112 testes passando
 - [x] Deploy no Render + GitHub Pages
 - [ ] Persistência com Supabase
 - [ ] Histórico e analytics de tendências
